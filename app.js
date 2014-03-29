@@ -39,9 +39,20 @@ http.createServer(app).listen(app.get('port'), function() {
     console.log('Express server listening on port ' + app.get('port'));
 });
 
-//passport
+/*
+ * passportでgoogleのOpenIdからログインしています
+ * 参考にしたサイトは以下の通りです。
+ * 
+ * YoheiM.NET
+ * http://www.yoheim.net/blog.php?q=20131003
+ * 
+ */
 var GoogleStrategy = require('passport-google').Strategy;
 
+//passportのセッションを利用しているので、シリアライズ、デシリアライズを実装する必要があります。
+//ここに結構ハマりました。
+//以下の実装は公式サイトからパクってきたものですが、処理的には引数に渡されたオブジェクトのそのまま保存、
+//そのままま取り出しというシンプルなものです。
 passport.serializeUser(function(user, done) {
     done(null, user);
 });
@@ -50,31 +61,34 @@ passport.deserializeUser(function(obj, done) {
     done(null, obj);
 }); 
 
-// Passportを利用する実装
 passport.use(new GoogleStrategy({
-    // 以下のreturnURL先をRoutingで実装します
     returnURL : 'http://localhost:3000/auth/google/return',
     realm : 'http://localhost:3000/'
 },
-// 認証が終わったら呼び出される関数です
 function(identifier, profile, done) {
-    // identifierがopenID
-    // profileがユーザー情報（例：profile.displayName）
-    // done関数を実行して処理終了を通知
+    console.log('identifier');//test
     console.log(identifier);//test
+    console.log('profile');//test
     console.log(profile);//test
-    done(null, {id:12,name:'takeuchi'});
+    done(null, profile);
 }));
 
-// 認証を開始する為のURL
+//googleに遷移させるためのルーティング設定です。
 app.get('/auth/google', passport.authenticate('google'));
 
-// 認証終了後のGoogleからのコールバックに対応するURL
-app.get('/auth/google/return', passport.authenticate('google', {
-    successRedirect : '/success',
-    failureRedirect : '/'
-}));
-
-app.get('/success', function(req, res) {
-    res.render('success', {});
-}); 
+//goolge認証が成功した場合、goolgeから呼び出されるURLです。
+//ここはデフォルトだとsuccessRedirect、failureRedirectを設定する書き方になっていますが、少し誤解していました。
+//success、failはgoolgeログインの成功・失敗ではなく、
+//goolgeから認証を得ているユーザが自分のシステムに存在するか、しないかを判定しているようです。
+//少し考えてみれば、googleログインに成功しないと、このURL自体呼ばれませんから、
+//ここに来た時点でgoolgeログインは絶対に成功しているんですよね。
+app.get('/auth/google/return', function (req, res, next) {
+    passport.authenticate('google', function (err, user) {
+        if(user){
+            //TODO: ユーザ情報をセッションに持たせ、riderictでsuccessに遷移するようにしたい
+            res.render('success',user);
+        } else {
+            res.redirect('/');
+        }
+    })(req, res, next);
+});
