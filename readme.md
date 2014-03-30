@@ -36,6 +36,27 @@ Express server listening on port 8080
 ログイン成功!  
 ようこそ、<goolgeアカウント名>さん
 
+
+##自動結合テストの実施方法
+WebdriverJsで結合テストを書いてみました。
+実行方法は以下の通りです。
+
+###0. 前提条件
+*npm installで関連モジュールのインストールが完了している。
+*mochaをグローバルインストールしている。
+    npm install -g mocha
+
+###1. 必要モジュールの配置
+結合テスト実施にはChromeDriverが必要です。
+各OS専用のモジュールをインストールして、プロジェクトのルートに配置して下さい。
+
+<http://chromedriver.storage.googleapis.com/index.html>
+
+###2. テスト実施
+プロジェクトのルートまで移動して、以下コマンドでテストを実施します。
+
+    NODE_MAIL_ADDRESS="gmailアドレス" NODE_PASSWORD="gmailパスワード" NODE_USERNAME="gmailアカウント名"  mocha seleniumTest/ -R spec
+
 ##コンタクト
 メール
 kaidouji85@gmail.com

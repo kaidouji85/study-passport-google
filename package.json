@@ -9,6 +9,9 @@
     "express" : "3.5.0",
     "ejs" : "*",
     "passport" : "*",
-    "passport-google" : "*"
+    "passport-google" : "*",
+    "selenium-webdriver" : "*",
+    "chai": "*",
+    "mocha": "*"
   }
 }
